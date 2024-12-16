@@ -3,7 +3,7 @@
 require 'vendor/autoload.php';
 use TelegramBot\Api\Client;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
-use PDO;
+
 
 // Конфигурация базы данных
 $host = 'localhost';
@@ -45,10 +45,39 @@ $keyboard = new ReplyKeyboardMarkup(
 );
 
 // Обработчик команды /start
-$bot->command('start', function ($message) use ($bot, $keyboard) {
+$bot->on(function ($update) use ($bot) {
+    $message = $update->getMessage();
+    $text = $message->getText();
     $chatId = $message->getChat()->getId();
-    $bot->sendMessage($chatId, "Привет! Это бот для получения расчетных листов.\n\nНажмите 'Расчетный лист'.", null, false, null, $keyboard);
+
+    if ($text === "Расчетный лист") {
+        $bot->sendMessage($chatId, "Пожалуйста, отправьте ваш номер телефона, чтобы мы могли найти расчетный лист.");
+        return;
+    }
+
+    if (preg_match('/^\+?[0-9]{10,15}$/', $text)) { // Проверка формата телефона
+        $userPhone = $text;
+
+        // Получаем пользователя по номеру телефона
+        $user = getUserByPhone($userPhone);
+        if ($user) {
+            // Путь к файлу
+            $filePath = getFileByFio($user['fio']);
+            if ($filePath) {
+                $bot->sendDocument($chatId, new CURLFile($filePath));
+            } else {
+                $bot->sendMessage($chatId, "Файл для вас не найден.");
+            }
+        } else {
+            $bot->sendMessage($chatId, "Ваш номер телефона не найден в системе.");
+        }
+    } else {
+        $bot->sendMessage($chatId, "Некорректный номер телефона. Пожалуйста, отправьте корректный номер.");
+    }
+}, function () {
+    return true;
 });
+
 
 // Обработчик кнопки "Расчетный лист"
 $bot->on(function ($update) use ($bot) {
