@@ -7,9 +7,9 @@ use PDO;
 
 // Конфигурация базы данных
 $host = 'localhost';
-$db = 'aqbastay';
+$db = 'akbastau';
 $user = 'root';
-$pass = 'password'; // Замените на ваш пароль
+$pass = 'your_password'; // Замените на ваш пароль
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
@@ -34,7 +34,7 @@ function getFileByFio($fio) {
     return file_exists($filePath) ? $filePath : null;
 }
 
-$botToken = 'your_telegram_bot_token'; // Укажите токен вашего бота
+$botToken = '8022686995:AAHwhfNWHjswT27kL3q8R_fLyyh8pxem3pM'; // Укажите токен вашего бота
 $bot = new Client($botToken);
 
 // Клавиатура
