@@ -4,7 +4,6 @@ require 'vendor/autoload.php';
 use TelegramBot\Api\Client;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 
-
 // Конфигурация базы данных
 $host = 'localhost';
 $db = 'akbastau';
@@ -45,6 +44,19 @@ $keyboard = new ReplyKeyboardMarkup(
 );
 
 // Обработчик команды /start
+$bot->command('start', function ($message) use ($bot, $keyboard) {
+    $chatId = $message->getChat()->getId();
+    $bot->sendMessage(
+        $chatId, 
+        "Добро пожаловать в бот Акбастау!\n\nЕсли хотите получить расчетный лист — нажмите на кнопку ниже.",
+        null,
+        false,
+        null,
+        $keyboard
+    );
+});
+
+// Обработчик кнопки "Расчетный лист"
 $bot->on(function ($update) use ($bot) {
     $message = $update->getMessage();
     $text = $message->getText();
@@ -55,7 +67,7 @@ $bot->on(function ($update) use ($bot) {
         return;
     }
 
-    if (preg_match('/^\+?[0-9]{10,15}$/', $text)) { // Проверка формата телефона
+    if (preg_match('/^\+7[0-9]{10}$/', $text) { // Проверка формата телефона
         $userPhone = $text;
 
         // Получаем пользователя по номеру телефона
@@ -73,39 +85,6 @@ $bot->on(function ($update) use ($bot) {
         }
     } else {
         $bot->sendMessage($chatId, "Некорректный номер телефона. Пожалуйста, отправьте корректный номер.");
-    }
-}, function () {
-    return true;
-});
-
-
-// Обработчик кнопки "Расчетный лист"
-$bot->on(function ($update) use ($bot) {
-    $message = $update->getMessage();
-    $text = $message->getText();
-    $chatId = $message->getChat()->getId();
-
-    if ($text === "Расчетный лист") {
-        $userPhone = null; // Здесь вы можете реализовать сопоставление chat_id -> номер телефона, если оно требуется.
-
-        if (!$userPhone) {
-            $bot->sendMessage($chatId, "Вы не авторизованы. Отправьте ваш номер телефона.");
-            return;
-        }
-
-        // Получаем пользователя по номеру телефона
-        $user = getUserByPhone($userPhone);
-        if ($user) {
-            // Путь к файлу
-            $filePath = getFileByFio($user['fio']);
-            if ($filePath) {
-                $bot->sendDocument($chatId, new CURLFile($filePath));
-            } else {
-                $bot->sendMessage($chatId, "Файл для вас не найден.");
-            }
-        } else {
-            $bot->sendMessage($chatId, "Ваш номер телефона не найден в системе.");
-        }
     }
 }, function () {
     return true;
