@@ -50,8 +50,7 @@ $bot->command('start', function ($message) use ($bot, $keyboard) {
 // Обработчик кнопки "Расчетный лист"
 $bot->on(function ($update) use ($bot) {
     $message = $update->getMessage();
-    if (!$message) {
-        // Если сообщение отсутствует, просто игнорируем запрос
+    if (is_null($message)) {
         return;
     }
     $text = $message->getText();
